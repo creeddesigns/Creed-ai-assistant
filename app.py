@@ -1,58 +1,40 @@
 import streamlit as st
-import google.generativeai as genai
+import openai
 
 st.set_page_config(page_title="Creed AI Assistant", layout="wide")
 
 st.title("🤖 Creed AI Assistant")
-st.caption("Your personal AI assistant — like having Creed with you always")
+st.caption("Your personal AI assistant — by Creed")
 
-# Sidebar for API key
 with st.sidebar:
-    st.header("🔑 Configuration")
-    api_key = st.text_input("Gemini API Key", type="password", 
-                           help="Get free key from aistudio.google.com")
-    
-    if api_key:
-        genai.configure(api_key=api_key)
-        st.success("✅ API key configured!")
-    
-    st.markdown("---")
-    st.markdown("### Features coming soon:")
-    st.markdown("- 📊 Chart creation")
-    st.markdown("- 📁 Data analysis")
-    st.markdown("- 💡 Smart insights")
+    st.header("🔑 API Key")
+    api_key = st.text_input("OpenAI API Key", type="password")
+    st.markdown("Get key from [platform.openai.com](https://platform.openai.com)")
 
-# Chat interface
 if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "assistant", "content": "Hi! I'm Creed AI. Ask me anything about data, charts, or just chat with me! 👋"}
-    ]
+    st.session_state.messages = [{"role": "assistant", "content": "Hi! I'm Creed AI. Ask me anything! 👋"}]
 
-# Display chat history
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-# Chat input
-if prompt := st.chat_input("Ask Creed AI anything..."):
-    # Add user message
+if prompt := st.chat_input("Ask Creed AI..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
     
-    # Generate AI response
     with st.chat_message("assistant"):
-        with st.spinner("Creed is thinking..."):
-            if not api_key:
-                response = "⚠️ Please add your Gemini API key in the sidebar first. Get one free at aistudio.google.com"
-            else:
-                try:
-                    model = genai.GenerativeModel('gemini-1.5-flash')
-                    chat = model.start_chat(history=[])
-                    ai_response = chat.send_message(prompt)
-                    response = ai_response.text
-                except Exception as e:
-                    response = f"Error: {str(e)}"
-            
-            st.markdown(response)
-            st.session_state.messages.append({"role": "assistant", "content": response})
+        if not api_key:
+            response = "⚠️ Please add your OpenAI API key in the sidebar."
+        else:
+            try:
+                openai.api_key = api_key
+                completion = openai.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
+                )
+                response = completion.choices[0].message.content
+            except Exception as e:
+                response = f"Error: {e}"
+        st.markdown(response)
+        st.session_state.messages.append({"role": "assistant", "content": response})
