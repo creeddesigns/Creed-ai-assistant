@@ -33,7 +33,8 @@ for msg in st.session_state.messages:
 
 # Function to call Gemini API
 def call_gemini(prompt, api_key):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    # Using the stable model name
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent?key={api_key}"
     
     headers = {"Content-Type": "application/json"}
     data = {
@@ -68,4 +69,5 @@ if prompt := st.chat_input("Ask Creed AI anything..."):
                 response = f"Error: {str(e)}"
         
         st.markdown(response)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        st.session_state.messages.append({"role": "assistant", "content": response})        
+        
