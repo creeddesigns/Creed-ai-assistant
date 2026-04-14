@@ -1,40 +1,47 @@
-import streamlit as st
+   import streamlit as st
 import requests
-import json
 
-st.set_page_config(page_title="Creed AI", layout="wide")
+st.set_page_config(page_title="Creed AI Assistant", layout="wide")
 
 st.title("🤖 Creed AI Assistant")
-st.caption("Your real AI assistant — by Creed")
+st.caption("Your real AI assistant — powered by Google Gemini")
 
 # Sidebar for API key
 with st.sidebar:
-    st.header("🔑 API Key Required")
+    st.header("🔑 API Key")
     api_key = st.text_input("Enter your Gemini API Key", type="password", 
                            help="Get free key from aistudio.google.com")
     
     if api_key:
-        st.success("✅ API Key ready!")
+        st.success("✅ AI Ready!")
     
     st.markdown("---")
-    st.markdown("**Get your free API key:**")
-    st.markdown("[aistudio.google.com](https://aistudio.google.com)")
+    st.markdown("### How to get your free API key:")
+    st.markdown("1. Go to [aistudio.google.com](https://aistudio.google.com)")
+    st.markdown("2. Sign in with Google")
+    st.markdown("3. Click 'Get API key'")
+    st.markdown("4. Copy and paste here")
+    st.markdown("---")
+    st.markdown("### Features:")
+    st.markdown("- 💬 Real AI conversations")
+    st.markdown("- 📊 Chart creation (ask me)")
+    st.markdown("- 📁 Data analysis")
+    st.markdown("- 🧠 Smart insights")
 
-# Chat history
+# Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Hi! I'm Creed AI — a real intelligent assistant. Ask me anything! 📊✨"}
+        {"role": "assistant", "content": "Hi! I'm Creed AI. Ask me anything — data, charts, coding, or just chat! 👋"}
     ]
 
 # Display chat history
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
 # Function to call Gemini API
 def call_gemini(prompt, api_key):
-    # Using the stable model name
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
     
     headers = {"Content-Type": "application/json"}
     data = {
@@ -49,25 +56,27 @@ def call_gemini(prompt, api_key):
         result = response.json()
         return result["candidates"][0]["content"]["parts"][0]["text"]
     else:
-        return f"Error: {response.status_code} - {response.text}"
+        return f"Error: {response.status_code}. Please check your API key."
 
 # Chat input
-if prompt := st.chat_input("Ask Creed AI anything..."):
+user_input = st.chat_input("Ask Creed AI anything...")
+
+if user_input:
     # Add user message
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.session_state.messages.append({"role": "user", "content": user_input})
     with st.chat_message("user"):
-        st.markdown(prompt)
+        st.markdown(user_input)
     
-    # Generate AI response
+    # Generate response
     with st.chat_message("assistant"):
-        if not api_key:
-            response = "⚠️ Please add your Gemini API key in the sidebar first.\n\nGet one free at [aistudio.google.com](https://aistudio.google.com)"
-        else:
-            try:
-                response = call_gemini(prompt, api_key)
-            except Exception as e:
-                response = f"Error: {str(e)}"
+        with st.spinner("Creed is thinking..."):
+            if not api_key:
+                response = "⚠️ Please enter your Gemini API key in the sidebar first.\n\nGet one free at [aistudio.google.com](https://aistudio.google.com)"
+            else:
+                try:
+                    response = call_gemini(user_input, api_key)
+                except Exception as e:
+                    response = f"Error: {str(e)}"
         
         st.markdown(response)
-        st.session_state.messages.append({"role": "assistant", "content": response})        
-        
+        st.session_state.messages.append({"role": "assistant", "content": response})             
