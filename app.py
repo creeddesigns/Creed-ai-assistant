@@ -1,34 +1,28 @@
 import streamlit as st
-import requests
 
-st.set_page_config(page_title="Creed AI Assistant", layout="wide")
+st.set_page_config(page_title="Creed AI", layout="wide")
 
 st.title("🤖 Creed AI Assistant")
-st.caption("Your real AI assistant — by Creed")
+st.caption("Your assistant — by Creed")
 
-with st.sidebar:
-    st.header("🔑 API Key")
-    api_key = st.text_input("Gemini API Key", type="password")
-    if api_key:
-        st.success("✅ Key received")
-    st.markdown("[Get free API key](https://aistudio.google.com)")
+# Simple responses that actually work
+responses = {
+    "hi": "Hello! I'm Creed. How can I help you today?",
+    "hello": "Hi there! Ready to create some charts?",
+    "how are you": "I'm great! Ready to help you with data and charts.",
+    "chart": "I can help you create bar charts, line charts, and pie charts. Just tell me your data!",
+    "help": "I can help with charts, data analysis, and answering questions. What do you need?",
+    "bye": "Goodbye! Come back anytime.",
+}
 
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Hi! I'm Creed AI. Ask me anything! 👋"}]
+    st.session_state.messages = [{"role": "assistant", "content": "Hi! I'm Creed. Ask me about charts or just say hi! 👋"}]
 
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-def ask_gemini(prompt, key):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key={key}"
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
-    r = requests.post(url, json=payload)
-    if r.status_code == 200:
-        return r.json()["candidates"][0]["content"]["parts"][0]["text"]
-    return f"Error {r.status_code}: {r.text}"
-
-user_input = st.chat_input("Ask Creed AI...")
+user_input = st.chat_input("Type your message...")
 
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
@@ -36,10 +30,14 @@ if user_input:
         st.markdown(user_input)
     
     with st.chat_message("assistant"):
-        with st.spinner("Creed is thinking..."):
-            if not api_key:
-                response = "⚠️ Please add your Gemini API key in the sidebar."
-            else:
-                response = ask_gemini(user_input, api_key)
-        st.markdown(response)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        reply = "I'm Creed! I'm learning to be an AI assistant. For now, try asking about charts, data, or saying hello!"
+        
+        # Check for keywords
+        lower_input = user_input.lower()
+        for key, response in responses.items():
+            if key in lower_input:
+                reply = response
+                break
+        
+        st.markdown(reply)
+        st.session_state.messages.append({"role": "assistant", "content": reply})
