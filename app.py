@@ -79,4 +79,17 @@ if user_input:
                     response = f"Error: {str(e)}"
         
         st.markdown(response)
+        st.session_state.messages.append({"role": "assistant", "content": response})    
+    # Generate response
+    with st.chat_message("assistant"):
+        with st.spinner("Creed is thinking..."):
+            if not api_key:
+                response = "⚠️ Please enter your Gemini API key in the sidebar first.\n\nGet one free at [aistudio.google.com](https://aistudio.google.com)"
+            else:
+                try:
+                    response = call_gemini(user_input, api_key)
+                except Exception as e:
+                    response = f"Error: {str(e)}"
+        
+        st.markdown(response)
         st.session_state.messages.append({"role": "assistant", "content": response})             
