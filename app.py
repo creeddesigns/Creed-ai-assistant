@@ -21,7 +21,7 @@ for msg in st.session_state.messages:
         st.markdown(msg["content"])
 
 def ask_gemini(prompt, key):
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key={key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key={key}"
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
     r = requests.post(url, json=payload)
     if r.status_code == 200:
