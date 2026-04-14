@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+import matplotlib.pyplot as plt
 import google.generativeai as genai
 import json
 import re
@@ -37,19 +37,20 @@ with tab1:
                     """)
                     text = re.sub(r'```json\n?|```\n?', '', response.text.strip())
                     data = json.loads(text)
-                    df = pd.DataFrame({'x': data['labels'], 'y': data['values']})
+                    
+                    fig, ax = plt.subplots()
                     if data['type'] == 'bar':
-                        fig = px.bar(df, x='x', y='y', title=data.get('title', prompt))
+                        ax.bar(data['labels'], data['values'])
                     elif data['type'] == 'line':
-                        fig = px.line(df, x='x', y='y', title=data.get('title', prompt))
-                    elif data['type'] == 'pie':
-                        fig = px.pie(df, names='x', values='y', title=data.get('title', prompt))
+                        ax.plot(data['labels'], data['values'], marker='o')
                     else:
-                        fig = px.scatter(df, x='x', y='y', title=data.get('title', prompt))
-                    st.plotly_chart(fig, use_container_width=True)
+                        ax.pie(data['values'], labels=data['labels'])
+                    
+                    ax.set_title(data.get('title', prompt))
+                    st.pyplot(fig)
                     st.success("✅ Chart ready!")
                 except Exception as e:
-                    st.error(f"Error: {e}. Try: 'Bar chart: A 10, B 20'")
+                    st.error(f"Try: 'Bar chart: A 10, B 20'")
 
 with tab2:
     st.subheader("Upload CSV or Excel")
@@ -60,7 +61,9 @@ with tab2:
         x = st.selectbox("X axis", df.columns)
         y = st.selectbox("Y axis", df.columns)
         if st.button("Make Chart"):
-            st.plotly_chart(px.bar(df, x=x, y=y), use_container_width=True)
+            fig, ax = plt.subplots()
+            ax.bar(df[x], df[y])
+            st.pyplot(fig)
 
 st.markdown("---")
 st.markdown("Built with ❤️ by **Creed**")
